@@ -1,4 +1,4 @@
-//proportional scheduling
+//priority scheduling
 #include <stdio.h>
 struct Process {
     int id;
