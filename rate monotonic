@@ -1,0 +1,64 @@
+//rate-monotonic
+#include <stdio.h>
+struct Task {
+    int id;
+    int period;
+    int burstTime;
+    int remainingTime;
+    int deadline;
+    int completed;
+};
+void rateMonotonicScheduling(struct Task tasks[], int n, int hyperPeriod) {
+    int time;
+    for (time = 0; time < hyperPeriod; time++) {
+        int highestPriorityTask = -1;
+        for (int i = 0; i < n; i++) {
+            if (tasks[i].remainingTime > 0 && (highestPriorityTask == -1 || tasks[i].period < tasks[highestPriorityTask].period)) {
+                highestPriorityTask = i;
+            }
+        }
+        if (highestPriorityTask != -1) {
+            tasks[highestPriorityTask].remainingTime--;
+            printf("Time %d: Task %d\n", time, tasks[highestPriorityTask].id);
+            if (tasks[highestPriorityTask].remainingTime == 0) {
+                tasks[highestPriorityTask].completed++;
+                tasks[highestPriorityTask].remainingTime = tasks[highestPriorityTask].burstTime;
+                tasks[highestPriorityTask].deadline += tasks[highestPriorityTask].period;
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            if (time >= tasks[i].deadline && tasks[i].remainingTime > 0) {
+                printf("Task %d missed its deadline at time %d\n", tasks[i].id, time);
+                tasks[i].deadline += tasks[i].period;
+                tasks[i].remainingTime = tasks[i].burstTime;
+            }
+        }
+    }
+}
+int main() {
+    int n, hyperPeriod = 0;
+    printf("Enter the number of tasks: ");
+    scanf("%d", &n);
+    struct Task tasks[n];
+    for (int i = 0; i < n; i++) {
+        printf("Enter burst time and period for task %d: ", i + 1);
+        scanf("%d %d", &tasks[i].burstTime, &tasks[i].period);
+        tasks[i].id = i + 1;
+        tasks[i].remainingTime = tasks[i].burstTime;
+        tasks[i].deadline = tasks[i].period;
+        tasks[i].completed = 0;
+        if (hyperPeriod == 0) {
+            hyperPeriod = tasks[i].period;
+        } else {
+            int a = hyperPeriod, b = tasks[i].period, temp;
+            while (b != 0) {
+                temp = b;
+                b = a % b;
+                a = temp;
+            }
+            hyperPeriod = (hyperPeriod * tasks[i].period) / a;
+        }
+    }
+    rateMonotonicScheduling(tasks, n, hyperPeriod);
+    return 0;
+}
