@@ -1,0 +1,51 @@
+//proportional_scheduling
+#include <stdio.h>
+struct Task {
+    int id;
+    int burstTime;
+    int remainingTime;
+    int weight;
+    int allocatedTime;
+};
+void weightedRoundRobin(struct Task tasks[], int n, int quantum) {
+    int time = 0;
+    int totalWeight = 0;
+    for (int i = 0; i < n; i++) {
+        totalWeight += tasks[i].weight;
+    }
+    while (1) {
+        int done = 1;
+        for (int i = 0; i < n; i++) {
+            if (tasks[i].remainingTime > 0) {
+                done = 0;
+                int allocatedQuantum = (quantum * tasks[i].weight) / totalWeight;
+                if (tasks[i].remainingTime > allocatedQuantum) {
+                    time += allocatedQuantum;
+                    tasks[i].remainingTime -= allocatedQuantum;
+                } else {
+                    time += tasks[i].remainingTime;
+                    tasks[i].remainingTime = 0;
+                }
+                printf("Time %d: Task %d (allocated %d units)\n", time, tasks[i].id, allocatedQuantum);
+            }
+        }
+        if (done) break;
+    }
+}
+int main() {
+    int n, quantum;
+    printf("Enter the number of tasks: ");
+    scanf("%d", &n);
+    struct Task tasks[n];
+    for (int i = 0; i < n; i++) {
+        printf("Enter burst time and weight for task %d: ", i + 1);
+        scanf("%d %d", &tasks[i].burstTime, &tasks[i].weight);
+        tasks[i].id = i + 1;
+        tasks[i].remainingTime = tasks[i].burstTime;
+        tasks[i].allocatedTime = 0;
+    }
+    printf("Enter the time quantum: ");
+    scanf("%d", &quantum);
+    weightedRoundRobin(tasks, n, quantum);
+    return 0;
+}
