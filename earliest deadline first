@@ -1,0 +1,57 @@
+//earliest_deadline_first
+#include <stdio.h>
+struct Task {
+    int id;
+    int burstTime;
+    int period;
+    int remainingTime;
+    int nextDeadline;
+};
+void earliestDeadlineFirst(struct Task tasks[], int n, int hyperPeriod) {
+    int time;
+    for (time = 0; time < hyperPeriod; time++) {
+        int earliestDeadlineTask = -1;
+        for (int i = 0; i < n; i++) {
+            if (tasks[i].remainingTime > 0 && (earliestDeadlineTask == -1 || tasks[i].nextDeadline < tasks[earliestDeadlineTask].nextDeadline)) {
+                earliestDeadlineTask = i;
+            }
+        }
+        if (earliestDeadlineTask != -1) {
+            tasks[earliestDeadlineTask].remainingTime--;
+            printf("Time %d: Task %d\n", time, tasks[earliestDeadlineTask].id);
+            if (tasks[earliestDeadlineTask].remainingTime == 0) {
+                tasks[earliestDeadlineTask].remainingTime = tasks[earliestDeadlineTask].burstTime;
+                tasks[earliestDeadlineTask].nextDeadline += tasks[earliestDeadlineTask].period;
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            if (time >= tasks[i].nextDeadline && tasks[i].remainingTime > 0) {
+                printf("Task %d missed its deadline at time %d\n", tasks[i].id, time);
+                tasks[i].remainingTime = tasks[i].burstTime;
+                tasks[i].nextDeadline += tasks[i].period;
+            }
+        }
+    }
+}
+int main() {
+    int n, hyperPeriod = 1;
+    printf("Enter the number of tasks: ");
+    scanf("%d", &n);
+    struct Task tasks[n];
+    for (int i = 0; i < n; i++) {
+        printf("Enter burst time and period for task %d: ", i + 1);
+        scanf("%d %d", &tasks[i].burstTime, &tasks[i].period);
+        tasks[i].id = i + 1;
+        tasks[i].remainingTime = tasks[i].burstTime;
+        tasks[i].nextDeadline = tasks[i].period;
+        int a = hyperPeriod, b = tasks[i].period, temp;
+        while (b != 0) {
+            temp = b;
+            b = a % b;
+            a = temp;
+        }
+        hyperPeriod = (hyperPeriod * tasks[i].period) / a;
+    }
+    earliestDeadlineFirst(tasks, n, hyperPeriod);
+    return 0;
+}
