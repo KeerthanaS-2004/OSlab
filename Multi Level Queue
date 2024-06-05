@@ -1,0 +1,68 @@
+//multi-level-queue
+#include <stdio.h>
+#define MAX_PROCESSES 100
+struct Process {
+    int id;
+    int burstTime;
+    int remainingTime;
+    int waitingTime;
+    int turnaroundTime;
+    int queue;
+};
+void roundRobin(struct Process proc[], int n, int quantum) {
+    int time = 0, i;
+    while (1) {
+        int done = 1;
+        for (i = 0; i < n; i++) {
+            if (proc[i].queue == 1 && proc[i].remainingTime > 0) {
+                done = 0;
+                if (proc[i].remainingTime > quantum) {
+                    time += quantum;
+                    proc[i].remainingTime -= quantum;
+                } else {
+                    time += proc[i].remainingTime;
+                    proc[i].waitingTime = time - proc[i].burstTime;
+                    proc[i].turnaroundTime = time;
+                    proc[i].remainingTime = 0;
+                }
+            }
+        }
+        if (done) break;
+    }
+}
+void fcfs(struct Process proc[], int n) {
+    int time = 0, i;
+    for (i = 0; i < n; i++) {
+        if (proc[i].queue == 2) {
+            proc[i].waitingTime = time;
+            time += proc[i].burstTime;
+            proc[i].turnaroundTime = time;
+        }
+    }
+}
+void printProcesses(struct Process proc[], int n) {
+    printf("ID\tBurst Time\tQueue\tWaiting Time\tTurnaround Time\n");
+    for (int i = 0; i < n; i++) {
+        printf("%d\t%d\t\t%d\t\t%d\t\t%d\n", proc[i].id, proc[i].burstTime, proc[i].queue, proc[i].waitingTime, proc[i].turnaroundTime);
+    }
+}
+int main() {
+    int n, quantum;
+    struct Process proc[MAX_PROCESSES];
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++) {
+        printf("Enter burst time and queue (1 for RR, 2 for FCFS) for process %d: ", i + 1);
+        scanf("%d %d", &proc[i].burstTime, &proc[i].queue);
+        proc[i].id = i + 1;
+        proc[i].remainingTime = proc[i].burstTime;
+        proc[i].waitingTime = 0;
+        proc[i].turnaroundTime = 0;
+    }
+    printf("Enter the time quantum for Round Robin queue: ");
+    scanf("%d", &quantum);
+    roundRobin(proc, n, quantum);
+    fcfs(proc, n);
+    printProcesses(proc, n);
+    return 0;
+}
