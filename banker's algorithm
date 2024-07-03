@@ -1,0 +1,110 @@
+//banker's algorithm
+#include <stdio.h>
+#define MAX_PROCESSES 10
+#define MAX_RESOURCES 10
+int available[MAX_RESOURCES];
+int max[MAX_PROCESSES][MAX_RESOURCES];
+int allocation[MAX_PROCESSES][MAX_RESOURCES];
+int need[MAX_PROCESSES][MAX_RESOURCES];
+int finish[MAX_PROCESSES];
+int num_processes;
+int num_resources;
+int safe_sequence[MAX_PROCESSES];
+int sequence_index = 0;
+int is_safe()
+{
+    int work[MAX_RESOURCES];
+    int finish_copy[MAX_PROCESSES];
+    int i, j, k;
+    for (i = 0; i < num_resources; ++i)
+        work[i] = available[i];
+    for (i = 0; i < num_processes; ++i)
+        finish_copy[i] = finish[i];
+    int count = 0;
+    while (count < num_processes)
+    {
+        int found = 0;
+        for (i = 0; i < num_processes; ++i)
+        {
+            if (!finish_copy[i])
+            {
+                int can_allocate = 1;
+                for (j = 0; j < num_resources; ++j)
+                {
+                    if (need[i][j] > work[j])
+                    {
+                        can_allocate = 0;
+                        break;
+                    }
+                }
+                if (can_allocate)
+                {
+                    safe_sequence[sequence_index++] = i;
+                    for (j = 0; j < num_resources; ++j)
+                        work[j] += allocation[i][j];
+                    finish_copy[i] = 1;
+                    found = 1;
+                    ++count;
+                }
+            }
+        }
+        if (!found)
+            return 0;
+    }
+    return 1;
+}
+void print_need_matrix()
+{
+    printf("Need Matrix:\n");
+    for (int i = 0; i < num_processes; ++i)
+    {
+        printf("P%d: ", i);
+        for (int j = 0; j < num_resources; ++j)
+            printf("%d ", need[i][j]);
+        printf("\n");
+    }
+}
+int main()
+{
+    int i, j;
+    printf("Enter number of processes: ");
+    scanf("%d", &num_processes);
+    printf("Enter number of resources: ");
+    scanf("%d", &num_resources);
+    printf("Enter available resources: ");
+    for (i = 0; i < num_resources; ++i)
+        scanf("%d", &available[i]);
+    printf("Enter maximum resources needed for each process:\n");
+    for (i = 0; i < num_processes; ++i)
+    {
+        printf("Process %d: ", i);
+        for (j = 0; j < num_resources; ++j)
+        {
+            scanf("%d", &max[i][j]);
+            need[i][j] = max[i][j];
+        }
+    }
+    printf("Enter allocated resources for each process:\n");
+    for (i = 0; i < num_processes; ++i)
+    {
+        printf("Process %d: ", i);
+        for (j = 0; j < num_resources; ++j)
+        {
+            scanf("%d", &allocation[i][j]);
+            need[i][j] -= allocation[i][j];
+        }
+    }
+    for (i = 0; i < num_processes; ++i)
+        finish[i] = 0;
+    print_need_matrix();
+    if (is_safe())
+    {
+        printf("\nSystem is in a safe state\nSafe sequence: ");
+        for (i = 0; i < num_processes; ++i)
+            printf("P%d ", safe_sequence[i]);
+        printf("\n");
+    }
+    else
+        printf("\nSystem is in an unsafe state");
+    return 0;
+}
