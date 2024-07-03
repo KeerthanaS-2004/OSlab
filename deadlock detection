@@ -1,4 +1,4 @@
-//deadlock detection
+//deadlock detetction
 #include <stdio.h>
 #define MAX_PROCESSES 10
 #define MAX_RESOURCES 10
@@ -8,69 +8,70 @@ int available_resources[MAX_RESOURCES];
 int n_processes, n_resources;
 int is_deadlock()
 {
-    int finish[MAX_PROCESSES] = {0};
-    int work[MAX_RESOURCES];
-    int need[MAX_PROCESSES][MAX_RESOURCES];
-    for (int i = 0; i < n_resources; i++)
-        work[i] = available_resources[i];
-    for (int i = 0; i < n_processes; i++)
-        for (int j = 0; j < n_resources; j++)
-            need[i][j] = max_demand[i][j] - allocation[i][j];
-    int count = 0;
-    while (count < n_processes)
-    {
-        int found = 0;
-        for (int p = 0; p < n_processes; p++)
-        {
-            if (!finish[p])
-            {
-                int can_be_allocated = 1;
-                for (int r = 0; r < n_resources; r++)
-                {
-                    if (need[p][r] > work[r])
-                    {
-                        can_be_allocated = 0;
-                        break;
-                    }
-                }
-                if (can_be_allocated)
-                {
-                    finish[p] = 1;
-                    found = 1;
-                    count++;
-                    for (int r = 0; r < n_resources; r++)
-                        work[r] += allocation[p][r];
-                    break;
-                }
-            }
-        }
-        if (!found)
-            break;
-    }
-    for (int i = 0; i < n_processes; i++)
-        if (!finish[i])
-            return 1;
-    return 0;
+    int finish[MAX_PROCESSES] = {0};
+    int work[MAX_RESOURCES];
+    int need[MAX_PROCESSES][MAX_RESOURCES];
+    for (int i = 0; i < n_resources; i++)
+        work[i] = available_resources[i];
+    for (int i = 0; i < n_processes; i++)
+        for (int j = 0; j < n_resources; j++)
+            need[i][j] = max_demand[i][j] - allocation[i][j];
+    int count = 0;
+    while (count < n_processes)
+    {
+        int found = 0;
+        for (int p = 0; p < n_processes; p++)
+        {
+            if (!finish[p])
+            {
+                int can_be_allocated = 1;
+                for (int r = 0; r < n_resources; r++)
+                {
+                    if (need[p][r] > work[r])
+                    {
+                        can_be_allocated = 0;
+                        break;
+                    }
+                }
+                if (can_be_allocated)
+                {
+                    finish[p] = 1;
+                    found = 1;
+                    count++;
+                    printf("Process %d has been executed.\n", p);
+                    for (int r = 0; r < n_resources; r++)
+                        work[r] += allocation[p][r];
+                    break;
+                }
+            }
+        }
+        if (!found)
+            break;
+    }
+    for (int i = 0; i < n_processes; i++)
+        if (!finish[i])
+            return 1;
+    return 0;
 }
 void main()
 {
-    printf("Enter number of processes: ");
-    scanf("%d", &n_processes);
-    printf("Enter number of resources: ");
-    scanf("%d", &n_resources);
-    printf("Enter allocation matrix (%d x %d):\n", n_processes, n_resources);
-    for (int i = 0; i < n_processes; i++)
-        for (int j = 0; j < n_resources; j++)
-            scanf("%d", &allocation[i][j]);
-    printf("Enter maximum demand matrix (%d x %d):\n", n_processes, n_resources);
-    for (int i = 0; i < n_processes; i++)
-        for (int j = 0; j < n_resources; j++)
-            scanf("%d", &max_demand[i][j]);
-    printf("Enter available resources vector (%d elements):\n", n_resources);
-    for (int i = 0; i < n_resources; i++)
-        scanf("%d", &available_resources[i]);
-    if (is_deadlock())
-        printf("Deadlock detected.\n");
-    else
-        printf("No deadlock detected.\n");
+    printf("Enter number of processes: ");
+    scanf("%d", &n_processes);
+    printf("Enter number of resources: ");
+    scanf("%d", &n_resources);
+    printf("Enter allocation matrix (%d x %d):\n", n_processes, n_resources);
+    for (int i = 0; i < n_processes; i++)
+        for (int j = 0; j < n_resources; j++)
+            scanf("%d", &allocation[i][j]);
+    printf("Enter maximum demand matrix (%d x %d):\n", n_processes, n_resources);
+    for (int i = 0; i < n_processes; i++)
+        for (int j = 0; j < n_resources; j++)
+            scanf("%d", &max_demand[i][j]);
+    printf("Enter available resources vector (%d elements):\n", n_resources);
+    for (int i = 0; i < n_resources; i++)
+        scanf("%d", &available_resources[i]);
+    if (is_deadlock())
+        printf("Deadlock detected.\n");
+    else
+        printf("No deadlock detected.\n");
 }
