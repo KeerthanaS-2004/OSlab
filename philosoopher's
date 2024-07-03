@@ -1,0 +1,83 @@
+//dining philosopher's problem
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <unistd.h>
+#define MAX_PHILOSOPHERS 10
+pthread_mutex_t forks[MAX_PHILOSOPHERS];
+pthread_cond_t can_eat[MAX_PHILOSOPHERS];
+pthread_t philosophers[MAX_PHILOSOPHERS];
+int num_philosophers;
+int num_hungry;
+int hungry_positions[MAX_PHILOSOPHERS];
+int one_can_eat = 1;
+int meals_eaten[MAX_PHILOSOPHERS] = {0};
+int meals_needed[MAX_PHILOSOPHERS] = {0};
+void *philosopher(void *arg)
+{
+    int philosopher_id = *(int *)arg;
+    int left_fork = philosopher_id;
+    int right_fork = (philosopher_id + 1) % num_philosophers;
+    while (meals_eaten[philosopher_id] < meals_needed[philosopher_id])
+    {
+        pthread_mutex_lock(&forks[left_fork]);
+        pthread_mutex_lock(&forks[right_fork]);
+        printf("Philosopher %d is eating\n", philosopher_id);
+        meals_eaten[philosopher_id]++;
+        usleep(rand() % 1000000);
+        pthread_mutex_unlock(&forks[right_fork]);
+        pthread_mutex_unlock(&forks[left_fork]);
+        printf("Philosopher %d is thinking\n", philosopher_id);
+        usleep(rand() % 1000000);
+    }
+    return NULL;
+}
+void main()
+{
+    srand(time(NULL));
+    printf("Enter the total number of philosophers:");
+    scanf("%d", &num_philosophers);
+    if (num_philosophers < 2 || num_philosophers > MAX_PHILOSOPHERS)
+    {
+        printf("Invalid number of philosophers");
+        return 1;
+    }
+    for (int i = 0; i < num_philosophers; i++)
+        pthread_mutex_init(&forks[i], NULL);
+    printf("Enter how many philosophers are hungry: ");
+    scanf("%d", &num_hungry);
+    if (num_hungry > num_philosophers || num_hungry < 0)
+    {
+        printf("Invalid number of hungry philosophers");
+        return 1;
+    }
+    printf("Enter the positions (0 to %d) of hungry philosophers: ", num_philosophers - 1);
+    for (int i = 0; i < num_hungry; i++)
+    {
+        scanf("%d", &hungry_positions[i]);
+        if (hungry_positions[i] < 0 || hungry_positions[i] >= num_philosophers)
+        {
+            printf("Invalid philosopher position");
+            return 1;
+        }
+    }
+    printf("Enter 1 if one philosopher can eat at a time, or 2 if two philosophers can eat at a time: ");
+    scanf("%d", &one_can_eat);
+    if (one_can_eat != 1 && one_can_eat != 2)
+    {
+        printf("Invalid input for dining rule");
+        return 1;
+    }
+    for (int i = 0; i < num_hungry; i++)
+        meals_needed[hungry_positions[i]]=1;
+    for (int i = 0; i < num_philosophers; i++)
+    {
+        int *arg = malloc(sizeof(*arg));
+        *arg = i;
+        pthread_create(&philosophers[i], NULL, philosopher, arg);
+    }
+    for (int i = 0; i < num_philosophers; i++)
+        pthread_join(philosophers[i], NULL);
+    for (int i = 0; i < num_philosophers; i++)
+        pthread_mutex_destroy(&forks[i]);
+}
