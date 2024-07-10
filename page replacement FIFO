@@ -1,0 +1,57 @@
+//page replacement-FIFO
+#include <stdio.h>
+#include <stdlib.h>
+void fifoPageReplacement(int frames, int pageReferences[], int n)
+{
+    int *frameArray = (int *)malloc(frames * sizeof(int));
+    int i, j, k, pageFaults = 0, nextToReplace = 0;
+    int isPresent;
+    for (i = 0; i < frames; i++)
+        frameArray[i] = -1;
+    printf("Page Reference String:\n");
+    for (i = 0; i < n; i++)
+        printf("%d ", pageReferences[i]);
+    printf("\n\n");
+    printf("Frames Status:\n");
+    for (i = 0; i < n; i++)
+    {
+        isPresent = 0;
+        for (j = 0; j < frames; j++)
+            if (frameArray[j] == pageReferences[i])
+            {
+                isPresent = 1;
+                break;
+            }
+        if (!isPresent)
+        {
+            frameArray[nextToReplace] = pageReferences[i];
+            nextToReplace = (nextToReplace + 1) % frames;
+            pageFaults++;
+        }
+        for (k = 0; k < frames; k++)
+        {
+            if (frameArray[k] != -1)
+                printf("%d ", frameArray[k]);
+            else
+                printf("- ");
+        }
+        printf("\tPage Fault %d\n",pageFaults);
+        printf("\n");
+    }
+    printf("\nTotal Page Faults: %d\n", pageFaults);
+    free(frameArray);
+}
+void main()
+{
+    int frames, n, i;
+    printf("Enter number of frames: ");
+    scanf("%d", &frames);
+    printf("Enter number of page references: ");
+    scanf("%d", &n);
+    int *pageReferences = (int *)malloc(n * sizeof(int));
+    printf("Enter the page references: ");
+    for (i = 0; i < n; i++)
+        scanf("%d", &pageReferences[i]);
+    fifoPageReplacement(frames, pageReferences, n);
+    free(pageReferences);
+}
