@@ -36,7 +36,6 @@ void fifoPageReplacement(int frames, int pageReferences[], int n)
                 printf("- ");
         }
         printf("\tPage Fault %d\n",pageFaults);
-        printf("\n");
     }
     printf("\nTotal Page Faults: %d\n", pageFaults);
     free(frameArray);
