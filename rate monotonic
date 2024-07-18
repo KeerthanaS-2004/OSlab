@@ -1,64 +1,53 @@
-//rate-monotonic
-#include <stdio.h>
-struct Task {
-    int id;
-    int period;
-    int burstTime;
-    int remainingTime;
-    int deadline;
-    int completed;
-};
-void rateMonotonicScheduling(struct Task tasks[], int n, int hyperPeriod) {
-    int time;
-    for (time = 0; time < hyperPeriod; time++) {
-        int highestPriorityTask = -1;
-        for (int i = 0; i < n; i++) {
-            if (tasks[i].remainingTime > 0 && (highestPriorityTask == -1 || tasks[i].period < tasks[highestPriorityTask].period)) {
-                highestPriorityTask = i;
-            }
-        }
-        if (highestPriorityTask != -1) {
-            tasks[highestPriorityTask].remainingTime--;
-            printf("Time %d: Task %d\n", time, tasks[highestPriorityTask].id);
-            if (tasks[highestPriorityTask].remainingTime == 0) {
-                tasks[highestPriorityTask].completed++;
-                tasks[highestPriorityTask].remainingTime = tasks[highestPriorityTask].burstTime;
-                tasks[highestPriorityTask].deadline += tasks[highestPriorityTask].period;
-            }
-        }
-        for (int i = 0; i < n; i++) {
-            if (time >= tasks[i].deadline && tasks[i].remainingTime > 0) {
-                printf("Task %d missed its deadline at time %d\n", tasks[i].id, time);
-                tasks[i].deadline += tasks[i].period;
-                tasks[i].remainingTime = tasks[i].burstTime;
-            }
-        }
-    }
-}
-int main() {
-    int n, hyperPeriod = 0;
-    printf("Enter the number of tasks: ");
-    scanf("%d", &n);
-    struct Task tasks[n];
-    for (int i = 0; i < n; i++) {
-        printf("Enter burst time and period for task %d: ", i + 1);
-        scanf("%d %d", &tasks[i].burstTime, &tasks[i].period);
-        tasks[i].id = i + 1;
-        tasks[i].remainingTime = tasks[i].burstTime;
-        tasks[i].deadline = tasks[i].period;
-        tasks[i].completed = 0;
-        if (hyperPeriod == 0) {
-            hyperPeriod = tasks[i].period;
-        } else {
-            int a = hyperPeriod, b = tasks[i].period, temp;
-            while (b != 0) {
-                temp = b;
-                b = a % b;
-                a = temp;
-            }
-            hyperPeriod = (hyperPeriod * tasks[i].period) / a;
-        }
-    }
-    rateMonotonicScheduling(tasks, n, hyperPeriod);
-    return 0;
+//ratemonotonic
+#include <stdio.h> 
+// Structure to represent a process 
+struct Process { 
+int execution_time; 
+int time_period; 
+}; 
+// Function to calculate the least common multiple (LCM) 
+int lcm(int a, int b) { 
+int max = (a > b) ? a : b; 
+while (1) { 
+if (max % a == 0 && max % b == 0) 
+return max; 
+max++; 
+} 
+} 
+// Function to check if the set of processes is schedulable 
+int is_schedulable(struct Process processes[], int n) { 
+    float utilization = 0.0; 
+    for (int i = 0; i < n; i++) { 
+        utilization += (float)processes[i].execution_time / processes[i].time_period; 
+    } 
+    return utilization <= 1.0; 
+} 
+int main() { 
+    struct Process processes[] = { 
+        {3, 20}, // P1 
+        {2, 5},  // P2 
+        {2, 10}  // P3 
+    }; 
+    int n = sizeof(processes) / sizeof(processes[0]); 
+ 
+    // Check if the processes are schedulable 
+    if (!is_schedulable(processes, n)) { 
+        printf("The given set of processes is not schedulable.\n"); 
+        return 0; 
+    } 
+    // Calculate the scheduling time (LCM of time periods) 
+    int scheduling_time = lcm(processes[0].time_period, processes[1].time_period); 
+    scheduling_time = lcm(scheduling_time, processes[2].time_period); 
+    // Display the execution order 
+    printf("Execution order:\n"); 
+    for (int t = 0; t < scheduling_time; t++) { 
+        if (t % processes[1].time_period == 0) 
+            printf("P2 "); 
+        if (t % processes[2].time_period == 0) 
+printf("P3 "); 
+if (t % processes[0].time_period == 0) 
+printf("P1 "); 
+} 
+printf("\n"); 
+return 0; 
 }
